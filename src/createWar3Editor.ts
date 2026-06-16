@@ -1,14 +1,4 @@
 import type { Editor, Preset } from '@triggerix/editor'
-import {
-  getActionDescriptor,
-  getConditionDescriptor,
-  getEventDescriptor,
-  getSlotToolDescriptors,
-  getToolDescriptor
-} from './descriptor'
-import { War3Registry } from './registry'
-import { resolveSlotValue, toRule } from './serializer'
-import { War3EditorStateManager } from './state'
 import type {
   ItemDescriptor,
   SlotDef,
@@ -20,6 +10,16 @@ import type {
   War3EditorState,
   War3EventDef
 } from './types'
+import {
+  getActionDescriptor,
+  getConditionDescriptor,
+  getEventDescriptor,
+  getSlotToolDescriptors,
+  getToolDescriptor
+} from './descriptor'
+import { War3Registry } from './registry'
+import { resolveSlotValue, toRule } from './serializer'
+import { War3EditorStateManager } from './state'
 
 export interface War3Editor extends Editor<War3EditorState> {
   // 注册

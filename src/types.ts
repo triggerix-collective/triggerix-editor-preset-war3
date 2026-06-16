@@ -53,9 +53,9 @@ export interface War3ConditionDef extends BaseItemDef {
 }
 
 // --- 描述符/段 ---
-export type Segment =
-  | { type: 'text', content: string }
-  | { type: 'slot', key: string, label: string, tools: string[], value: unknown }
+export type Segment
+  = | { type: 'text', content: string }
+    | { type: 'slot', key: string, label: string, tools: string[], value: unknown }
 
 export interface ItemDescriptor {
   type: string

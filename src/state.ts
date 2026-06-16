@@ -1,5 +1,5 @@
-import { ObservableState } from '@triggerix/editor'
 import type { SlotValueEntry, War3EditorState } from './types'
+import { ObservableState } from '@triggerix/editor'
 
 const INITIAL_STATE: War3EditorState = {
   event: null,

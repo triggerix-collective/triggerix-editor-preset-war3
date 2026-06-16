@@ -1,6 +1,10 @@
 allowBuilds:
   esbuild: true
+  simple-git-hooks: true
 
 minimumReleaseAgeExclude:
   - '@triggerix/core'
   - '@triggerix/editor'
+shellEmulator: true
+
+trustPolicy: no-downgrade

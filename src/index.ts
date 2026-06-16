@@ -12,7 +12,6 @@ export { defineWar3Preset } from './preset'
 export { War3Registry } from './registry'
 export { resolveSlotValue, toRule } from './serializer'
 export { War3EditorStateManager } from './state'
-export type { Preset } from '@triggerix/editor'
 export type {
   CompositeToolDef,
   CompositeToolDescriptor,
@@ -32,3 +31,4 @@ export type {
   War3EventDef,
   War3PresetOptions
 } from './types'
+export type { Preset } from '@triggerix/editor'

@@ -1,12 +1,17 @@
 {
   "name": "triggerix-ui-preset-war3",
+  "type": "module",
   "version": "0.0.0",
   "packageManager": "pnpm@11.7.0",
   "description": "War3-style template editor preset for Triggerix",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "homepage": "https://github.com/triggerix-lang/triggerix-ui-preset-war3#readme",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:triggerix-lang/triggerix-ui-preset-war3.git"
+  },
+  "bugs": {
+    "url": "https://github.com/triggerix-lang/triggerix-ui-preset-war3/issues"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -14,12 +19,16 @@
       "require": "./dist/index.cjs"
     }
   },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "unbuild",
     "dev": "unbuild --stub",
+    "lint": "eslint --cache",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -27,7 +36,18 @@
     "@triggerix/editor": "^0.0.4"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^9.0.0",
+    "eslint": "^10.5.0",
+    "jiti": "^2.7.0",
+    "nano-staged": "^1.0.2",
+    "simple-git-hooks": "^2.13.1",
     "typescript": "^6.0.3",
     "unbuild": "^3.6.1"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm nano-staged"
+  },
+  "nano-staged": {
+    "*": "eslint --cache --fix"
   }
 }

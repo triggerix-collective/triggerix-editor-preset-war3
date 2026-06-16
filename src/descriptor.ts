@@ -1,4 +1,3 @@
-import { parseTemplate } from './parser'
 import type { War3Registry } from './registry'
 import type {
   ItemDescriptor,
@@ -6,6 +5,7 @@ import type {
   SlotValueEntry,
   ToolDescriptor
 } from './types'
+import { parseTemplate } from './parser'
 
 export function getEventDescriptor(
   registry: War3Registry,

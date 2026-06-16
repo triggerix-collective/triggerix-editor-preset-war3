@@ -1,10 +1,10 @@
-import { BaseRegistry } from '@triggerix/editor'
 import type {
   ToolDef,
   War3ActionDef,
   War3ConditionDef,
   War3EventDef
 } from './types'
+import { BaseRegistry } from '@triggerix/editor'
 
 /**
  * War3 注册表 - 继承 BaseRegistry，增加 Tool 注册能力
