@@ -44,16 +44,19 @@ export interface War3Editor extends Editor<War3EditorState> {
   getSlotTools: (slotDef: SlotDef) => ToolDescriptor[]
 
   // 状态操作
-  setEvent: (type: string) => void
+  setEvent: (id: string) => void
   clearEvent: () => void
   setEventSlot: (key: string, entry: SlotValueEntry) => void
-  addAction: (type: string) => void
+  addAction: (id: string) => void
   removeAction: (index: number) => void
   moveAction: (from: number, to: number) => void
   setActionSlot: (actionIndex: number, key: string, entry: SlotValueEntry) => void
-  addCondition: (type: string) => void
+  addCondition: (id: string) => void
   removeCondition: (index: number) => void
   setConditionSlot: (conditionIndex: number, key: string, entry: SlotValueEntry) => void
+
+  // 值来源查询
+  getValueSources: (valueType?: string) => { conditions: War3ConditionDef[], tools: Map<string, ToolDef> }
 
   // Preset
   applyPreset: (preset: Preset<War3Editor>) => void
@@ -93,37 +96,40 @@ export function createWar3Editor(): War3Editor {
       const state = stateManager.getState()
       if (!state.event)
         return null
-      return getEventDescriptor(registry, state.event.type, state.event.slotValues)
+      return getEventDescriptor(registry, state.event.id, state.event.slotValues)
     },
     getActionDescriptor: (index) => {
       const state = stateManager.getState()
       const action = state.actions[index]
       if (!action)
         return null
-      return getActionDescriptor(registry, action.type, action.slotValues)
+      return getActionDescriptor(registry, action.id, action.slotValues)
     },
     getConditionDescriptor: (index) => {
       const state = stateManager.getState()
       const condition = state.conditions[index]
       if (!condition)
         return null
-      return getConditionDescriptor(registry, condition.type, condition.slotValues)
+      return getConditionDescriptor(registry, condition.id, condition.slotValues)
     },
     getToolDescriptor: (toolName, slotValues) => getToolDescriptor(registry, toolName, slotValues),
     getSlotTools: slotDef => getSlotToolDescriptors(registry, slotDef),
 
     // --- 状态操作 ---
-    setEvent: type => stateManager.setEvent(type),
+    setEvent: id => stateManager.setEvent(id),
     clearEvent: () => stateManager.clearEvent(),
     setEventSlot: (key, entry) => stateManager.setEventSlot(key, entry),
-    addAction: type => stateManager.addAction(type),
+    addAction: id => stateManager.addAction(id),
     removeAction: index => stateManager.removeAction(index),
     moveAction: (from, to) => stateManager.moveAction(from, to),
     setActionSlot: (actionIndex, key, entry) => stateManager.setActionSlot(actionIndex, key, entry),
-    addCondition: type => stateManager.addCondition(type),
+    addCondition: id => stateManager.addCondition(id),
     removeCondition: index => stateManager.removeCondition(index),
     setConditionSlot: (conditionIndex, key, entry) =>
       stateManager.setConditionSlot(conditionIndex, key, entry),
+
+    // --- 值来源查询 ---
+    getValueSources: valueType => registry.getValueSources(valueType),
 
     // --- Preset ---
     applyPreset: (preset) => {

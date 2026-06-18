@@ -1,6 +1,6 @@
-import { parseTemplate } from './parser'
 import type { War3Registry } from './registry'
 import type { SlotValueEntry } from './types'
+import { parseTemplate } from './parser'
 
 /**
  * Compare two unknown values for equality. Primitives use strict equality;
@@ -10,9 +10,12 @@ import type { SlotValueEntry } from './types'
  * stored `entry.value`, so reference equality (`===`) cannot match it.
  */
 function valueEquals(a: unknown, b: unknown): boolean {
-  if (a === b) return true
-  if (a == null || b == null) return false
-  if (typeof a !== 'object' || typeof b !== 'object') return false
+  if (a === b)
+    return true
+  if (a == null || b == null)
+    return false
+  if (typeof a !== 'object' || typeof b !== 'object')
+    return false
   try {
     return JSON.stringify(a) === JSON.stringify(b)
   }
@@ -27,7 +30,8 @@ function valueEquals(a: unknown, b: unknown): boolean {
  * for non-primitive values.
  */
 function stringifyValue(v: unknown): string {
-  if (v == null) return ''
+  if (v == null)
+    return ''
   if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean')
     return String(v)
   try {
@@ -61,7 +65,7 @@ export function resolveSlotDisplayText(
     return fallbackLabel
 
   // Leaf tool
-  if (toolDef.type === 'leaf') {
+  if (toolDef.kind === 'leaf') {
     if (entry.value == null || entry.value === '')
       return fallbackLabel
     if (toolDef.input.type === 'select') {

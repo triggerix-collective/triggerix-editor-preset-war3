@@ -1,6 +1,6 @@
 import type { Rule } from '@triggerix/core'
 import type { War3Registry } from './registry'
-import type { SlotValueEntry, War3EditorState } from './types'
+import type { ItemState, SlotValueEntry, War3EditorState } from './types'
 
 /**
  * 递归解析单个 slot 值
@@ -13,7 +13,7 @@ export function resolveSlotValue(entry: SlotValueEntry, registry: War3Registry):
   if (!toolDef)
     return undefined
 
-  if (toolDef.type === 'leaf') {
+  if (toolDef.kind === 'leaf') {
     return toolDef.resolve(entry.value)
   }
 
@@ -46,6 +46,22 @@ function resolveItemParams(
   }
 
   return hasParams ? params : undefined
+}
+
+/**
+ * 序列化 ItemState 数组为 Rule JSON 的 action/condition 列表
+ */
+function serializeItems(
+  items: ItemState[],
+  registry: War3Registry
+): Array<{ type: string, params?: Record<string, unknown> }> {
+  return items.map((item) => {
+    const params = resolveItemParams(item.slotValues, registry)
+    return {
+      type: item.id,
+      ...(params ? { params } : {})
+    }
+  })
 }
 
 function generateRuleId(): string {
@@ -81,28 +97,16 @@ export function toRule(
   const rule: Record<string, unknown> = {
     id: ruleId ?? generateRuleId(),
     event: {
-      type: state.event?.type ?? '',
+      type: state.event?.id ?? '',
       ...(eventParams ? { params: eventParams } : {})
     },
-    actions: state.actions.map((action) => {
-      const params = resolveItemParams(action.slotValues, registry)
-      return {
-        type: action.type,
-        ...(params ? { params } : {})
-      }
-    })
+    actions: serializeItems(state.actions, registry)
   }
 
   if (state.conditions.length > 0) {
     rule.conditions = {
       type: 'and',
-      conditions: state.conditions.map((cond) => {
-        const params = resolveItemParams(cond.slotValues, registry)
-        return {
-          type: cond.type,
-          ...(params ? { params } : {})
-        }
-      })
+      conditions: serializeItems(state.conditions, registry)
     }
   }
 

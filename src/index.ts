@@ -32,4 +32,4 @@ export type {
   War3EventDef,
   War3PresetOptions
 } from './types'
-export type { Preset } from '@triggerix/editor'
+export type { BaseItemDef, Preset } from '@triggerix/editor'

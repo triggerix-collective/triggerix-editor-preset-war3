@@ -7,46 +7,41 @@ import type {
 } from './types'
 import { parseTemplate } from './parser'
 
-export function getEventDescriptor(
-  registry: War3Registry,
-  type: string,
+function buildDescriptor(
+  def: { id: string, template: string, slots?: Record<string, SlotDef> },
   slotValues?: Record<string, SlotValueEntry>
-): ItemDescriptor | null {
-  const def = registry.getEvent(type)
-  if (!def)
-    return null
+): ItemDescriptor {
   return {
-    type: def.type,
+    id: def.id,
     segments: parseTemplate(def.template, def.slots, slotValues)
   }
+}
+
+export function getEventDescriptor(
+  registry: War3Registry,
+  id: string,
+  slotValues?: Record<string, SlotValueEntry>
+): ItemDescriptor | null {
+  const def = registry.getEvent(id)
+  return def ? buildDescriptor(def, slotValues) : null
 }
 
 export function getActionDescriptor(
   registry: War3Registry,
-  type: string,
+  id: string,
   slotValues?: Record<string, SlotValueEntry>
 ): ItemDescriptor | null {
-  const def = registry.getAction(type)
-  if (!def)
-    return null
-  return {
-    type: def.type,
-    segments: parseTemplate(def.template, def.slots, slotValues)
-  }
+  const def = registry.getAction(id)
+  return def ? buildDescriptor(def, slotValues) : null
 }
 
 export function getConditionDescriptor(
   registry: War3Registry,
-  type: string,
+  id: string,
   slotValues?: Record<string, SlotValueEntry>
 ): ItemDescriptor | null {
-  const def = registry.getCondition(type)
-  if (!def)
-    return null
-  return {
-    type: def.type,
-    segments: parseTemplate(def.template, def.slots, slotValues)
-  }
+  const def = registry.getCondition(id)
+  return def ? buildDescriptor(def, slotValues) : null
 }
 
 export function getToolDescriptor(
@@ -58,9 +53,9 @@ export function getToolDescriptor(
   if (!def)
     return null
 
-  if (def.type === 'leaf') {
+  if (def.kind === 'leaf') {
     return {
-      type: 'leaf',
+      kind: 'leaf',
       name: toolName,
       label: def.label,
       input: def.input
@@ -68,7 +63,7 @@ export function getToolDescriptor(
   }
 
   return {
-    type: 'composite',
+    kind: 'composite',
     name: toolName,
     label: def.label,
     segments: parseTemplate(def.template, def.slots, slotValues)

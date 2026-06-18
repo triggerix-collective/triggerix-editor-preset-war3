@@ -1,8 +1,4 @@
-// Base interface for item definitions
-interface BaseItemDef {
-  type: string
-  label?: string
-}
+import type { BaseItemDef } from '@triggerix/editor'
 
 // --- 槽位系统 ---
 export interface SlotDef {
@@ -24,14 +20,16 @@ export interface LeafToolInput {
 }
 
 export interface LeafToolDef {
-  type: 'leaf'
+  kind: 'leaf'
+  type?: string
   label: string
   input: LeafToolInput
   resolve: (input: unknown) => unknown
 }
 
 export interface CompositeToolDef {
-  type: 'composite'
+  kind: 'composite'
+  type?: string
   label: string
   template: string
   slots: Record<string, SlotDef>
@@ -54,27 +52,28 @@ export interface War3ActionDef extends BaseItemDef {
 export interface War3ConditionDef extends BaseItemDef {
   template: string
   slots?: Record<string, SlotDef>
+  resolve?: (slotValues: Record<string, unknown>) => unknown
 }
 
 // --- 描述符/段 ---
-export type Segment =
-  | { type: 'text', content: string }
-  | { type: 'slot', key: string, label: string, tools: string[], value: unknown, entry?: SlotValueEntry }
+export type Segment
+  = | { type: 'text', content: string }
+    | { type: 'slot', key: string, label: string, tools: string[], value: unknown, entry?: SlotValueEntry }
 
 export interface ItemDescriptor {
-  type: string
+  id: string
   segments: Segment[]
 }
 
 export interface LeafToolDescriptor {
-  type: 'leaf'
+  kind: 'leaf'
   name: string
   label: string
   input: LeafToolInput
 }
 
 export interface CompositeToolDescriptor {
-  type: 'composite'
+  kind: 'composite'
   name: string
   label: string
   segments: Segment[]
@@ -84,7 +83,7 @@ export type ToolDescriptor = LeafToolDescriptor | CompositeToolDescriptor
 
 // --- 编辑器状态 ---
 export interface ItemState {
-  type: string
+  id: string
   slotValues: Record<string, SlotValueEntry>
 }
 

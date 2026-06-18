@@ -17,8 +17,8 @@ export class War3EditorStateManager extends ObservableState<War3EditorState> {
   }
 
   // --- Event ---
-  setEvent(type: string): void {
-    this.setState(s => ({ ...s, event: { type, slotValues: {} } }))
+  setEvent(id: string): void {
+    this.setState(s => ({ ...s, event: { id, slotValues: {} } }))
   }
 
   clearEvent(): void {
@@ -40,10 +40,10 @@ export class War3EditorStateManager extends ObservableState<War3EditorState> {
   }
 
   // --- Actions ---
-  addAction(type: string): void {
+  addAction(id: string): void {
     this.setState(s => ({
       ...s,
-      actions: [...s.actions, { type, slotValues: {} }]
+      actions: [...s.actions, { id, slotValues: {} }]
     }))
   }
 
@@ -64,24 +64,14 @@ export class War3EditorStateManager extends ObservableState<War3EditorState> {
   }
 
   setActionSlot(actionIndex: number, key: string, entry: SlotValueEntry): void {
-    this.setState((s) => {
-      const actions = [...s.actions]
-      const action = actions[actionIndex]
-      if (!action)
-        return s
-      actions[actionIndex] = {
-        ...action,
-        slotValues: { ...action.slotValues, [key]: entry }
-      }
-      return { ...s, actions }
-    })
+    this.setItemSlot('actions', actionIndex, key, entry)
   }
 
   // --- Conditions ---
-  addCondition(type: string): void {
+  addCondition(id: string): void {
     this.setState(s => ({
       ...s,
-      conditions: [...s.conditions, { type, slotValues: {} }]
+      conditions: [...s.conditions, { id, slotValues: {} }]
     }))
   }
 
@@ -93,21 +83,28 @@ export class War3EditorStateManager extends ObservableState<War3EditorState> {
   }
 
   setConditionSlot(conditionIndex: number, key: string, entry: SlotValueEntry): void {
-    this.setState((s) => {
-      const conditions = [...s.conditions]
-      const condition = conditions[conditionIndex]
-      if (!condition)
-        return s
-      conditions[conditionIndex] = {
-        ...condition,
-        slotValues: { ...condition.slotValues, [key]: entry }
-      }
-      return { ...s, conditions }
-    })
+    this.setItemSlot('conditions', conditionIndex, key, entry)
   }
 
   // --- Reset ---
   reset(): void {
     this.setState(() => ({ ...INITIAL_STATE }))
+  }
+
+  // --- Helpers ---
+  private setItemSlot(
+    field: 'actions' | 'conditions',
+    index: number,
+    key: string,
+    entry: SlotValueEntry
+  ): void {
+    this.setState((s) => {
+      const items = [...s[field]]
+      const item = items[index]
+      if (!item)
+        return s
+      items[index] = { ...item, slotValues: { ...item.slotValues, [key]: entry } }
+      return { ...s, [field]: items }
+    })
   }
 }

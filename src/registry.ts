@@ -23,4 +23,14 @@ export class War3Registry extends BaseRegistry<War3EventDef, War3ActionDef, War3
   getTools(): Map<string, ToolDef> {
     return new Map(this.tools)
   }
+
+  getValueSources(valueType?: string): { conditions: War3ConditionDef[], tools: Map<string, ToolDef> } {
+    let conditions = this.getConditions()
+    let tools = this.getTools()
+    if (valueType) {
+      conditions = conditions.filter(c => c.type === valueType)
+      tools = new Map([...tools.entries()].filter(([_, t]) => t.type === valueType))
+    }
+    return { conditions, tools }
+  }
 }
