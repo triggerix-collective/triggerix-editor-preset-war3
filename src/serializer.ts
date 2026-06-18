@@ -1,11 +1,11 @@
-import type { Rule } from '@triggerix/core'
+import type { Action, ActionNode, ConditionGroup, Event, Rule, Value } from '@triggerix/core'
 import type { War3Registry } from './registry'
 import type { ItemState, SlotValueEntry, War3EditorState } from './types'
 
 /**
- * 递归解析单个 slot 值
+ * Recursively resolve a single slot value.
  */
-export function resolveSlotValue(entry: SlotValueEntry, registry: War3Registry): unknown {
+export function resolveSlotValue(entry: SlotValueEntry, registry: War3Registry): Value | undefined {
   if (!entry.tool)
     return undefined
 
@@ -14,27 +14,27 @@ export function resolveSlotValue(entry: SlotValueEntry, registry: War3Registry):
     return undefined
 
   if (toolDef.kind === 'leaf') {
-    return toolDef.resolve(entry.value)
+    return toolDef.resolve(entry.value) as Value | undefined
   }
 
-  // composite: 递归解析子槽位
-  const resolvedSubSlots: Record<string, unknown> = {}
+  // composite: recursively resolve sub-slots
+  const resolvedSubSlots: Record<string, Value | undefined> = {}
   if (entry.subSlots) {
     for (const [key, subEntry] of Object.entries(entry.subSlots)) {
       resolvedSubSlots[key] = resolveSlotValue(subEntry, registry)
     }
   }
-  return toolDef.resolve(resolvedSubSlots)
+  return toolDef.resolve(resolvedSubSlots) as Value | undefined
 }
 
 /**
- * 解析 ItemState 的所有 slot 值为 params 对象
+ * Resolve all slot values of an ItemState into a params object.
  */
 function resolveItemParams(
   slotValues: Record<string, SlotValueEntry>,
   registry: War3Registry
-): Record<string, unknown> | undefined {
-  const params: Record<string, unknown> = {}
+): Record<string, Value> | undefined {
+  const params: Record<string, Value> = {}
   let hasParams = false
 
   for (const [key, entry] of Object.entries(slotValues)) {
@@ -49,41 +49,38 @@ function resolveItemParams(
 }
 
 /**
- * 序列化 ItemState 数组为 Rule JSON 的 action/condition 列表
+ * Serialize an ItemState array into an Action list.
  */
 function serializeItems(
   items: ItemState[],
   registry: War3Registry
-): Array<{ type: string, params?: Record<string, unknown> }> {
-  return items.map((item) => {
+): Action[] {
+  return items.map<Action>((item) => {
     const params = resolveItemParams(item.slotValues, registry)
-    return {
-      type: item.id,
-      ...(params ? { params } : {})
+    const action: Action = { type: item.id }
+    if (params) {
+      action.params = params
     }
+    return action
   })
 }
 
 function generateRuleId(): string {
-  // 优先使用 crypto.randomUUID（浏览器/Node 18+）
-  const cryptoRef = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto
-  if (cryptoRef?.randomUUID) {
-    return cryptoRef.randomUUID()
+  // Prefer crypto.randomUUID (browser / Node 18+)
+  if (typeof globalThis.crypto?.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID()
   }
   return `rule-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 /**
- * 将编辑器状态序列化为标准 Rule JSON
+ * Serialize editor state into a standard Rule JSON.
  *
- * 输出结构（与 @triggerix/core 兼容）：
+ * Output shape (compatible with @triggerix/core):
  *   {
- *     id, event: { type, params? }, conditions?: { type:'and', conditions:[...] },
+ *     id, event: { type, payload? }, conditions?: { type:'and', conditions:[...] },
  *     actions: [{ type, params? }]
  *   }
- *
- * 注意：实际 core 中 Event 字段为 source/payload，此处按编辑器约定使用 params 透传，
- * 由 runtime 层负责映射，因此输出统一使用宽松对象后再断言为 Rule。
  */
 export function toRule(
   state: War3EditorState,
@@ -94,21 +91,27 @@ export function toRule(
     ? resolveItemParams(state.event.slotValues, registry)
     : undefined
 
-  const rule: Record<string, unknown> = {
+  const event: Event = {
+    type: state.event?.id ?? '',
+    ...(eventParams ? { payload: eventParams } : {})
+  }
+
+  const actions: ActionNode[] = serializeItems(state.actions, registry)
+
+  const rule: Rule = {
     id: ruleId ?? generateRuleId(),
-    event: {
-      type: state.event?.id ?? '',
-      ...(eventParams ? { params: eventParams } : {})
-    },
-    actions: serializeItems(state.actions, registry)
+    event,
+    actions
   }
 
   if (state.conditions.length > 0) {
+    // Editor-level conditions actually use the Action shape ({ type, params }), which differs
+    // from core's Condition; the runtime layer handles the mapping, so we cast to ConditionGroup here.
     rule.conditions = {
       type: 'and',
-      conditions: serializeItems(state.conditions, registry)
+      conditions: serializeItems(state.conditions, registry) as unknown as ConditionGroup['conditions']
     }
   }
 
-  return rule as unknown as Rule
+  return rule
 }

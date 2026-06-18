@@ -8,6 +8,7 @@ export {
   getToolDescriptor
 } from './descriptor'
 export { resolveSlotDisplayText } from './display'
+export { defineCompositeTool, defineCondition, defineLeafTool } from './helpers'
 export { parseTemplate } from './parser'
 export { defineWar3Preset } from './preset'
 export { War3Registry } from './registry'

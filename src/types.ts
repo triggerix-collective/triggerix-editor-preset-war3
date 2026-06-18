@@ -1,6 +1,6 @@
 import type { BaseItemDef } from '@triggerix/editor'
 
-// --- 槽位系统 ---
+// --- Slot system ---
 export interface SlotDef {
   label: string
   tools: string[]
@@ -12,33 +12,36 @@ export interface SlotValueEntry {
   subSlots?: Record<string, SlotValueEntry>
 }
 
-// --- 工具系统 ---
-export interface LeafToolInput {
+// --- Tool system ---
+export interface LeafToolInput<TValue = unknown> {
   type: 'text' | 'number' | 'select'
   placeholder?: string
-  options?: Array<{ value: unknown, label: string }>
+  options?: Array<{ value: TValue, label: string }>
 }
 
-export interface LeafToolDef {
+export interface LeafToolDef<TInput = unknown, TOutput = unknown> {
   kind: 'leaf'
   type?: string
   label: string
-  input: LeafToolInput
-  resolve: (input: unknown) => unknown
+  input: LeafToolInput<TInput>
+  resolve: (input: TInput) => TOutput
 }
 
-export interface CompositeToolDef {
+export interface CompositeToolDef<
+  TSlotValues extends Record<string, unknown> = Record<string, unknown>,
+  TOutput = unknown
+> {
   kind: 'composite'
   type?: string
   label: string
   template: string
-  slots: Record<string, SlotDef>
-  resolve: (slotValues: Record<string, unknown>) => unknown
+  slots: Record<keyof TSlotValues & string, SlotDef>
+  resolve: (slotValues: TSlotValues) => TOutput
 }
 
-export type ToolDef = LeafToolDef | CompositeToolDef
+export type ToolDef = LeafToolDef<any, any> | CompositeToolDef<any, any>
 
-// --- 注册定义 ---
+// --- Registry definitions ---
 export interface War3EventDef extends BaseItemDef {
   template: string
   slots?: Record<string, SlotDef>
@@ -49,13 +52,15 @@ export interface War3ActionDef extends BaseItemDef {
   slots?: Record<string, SlotDef>
 }
 
-export interface War3ConditionDef extends BaseItemDef {
+export interface War3ConditionDef<
+  TSlotValues extends Record<string, unknown> = Record<string, unknown>
+> extends BaseItemDef {
   template: string
   slots?: Record<string, SlotDef>
-  resolve?: (slotValues: Record<string, unknown>) => unknown
+  resolve?: (slotValues: TSlotValues) => unknown
 }
 
-// --- 描述符/段 ---
+// --- Descriptors / segments ---
 export type Segment
   = | { type: 'text', content: string }
     | { type: 'slot', key: string, label: string, tools: string[], value: unknown, entry?: SlotValueEntry }
@@ -81,7 +86,7 @@ export interface CompositeToolDescriptor {
 
 export type ToolDescriptor = LeafToolDescriptor | CompositeToolDescriptor
 
-// --- 编辑器状态 ---
+// --- Editor state ---
 export interface ItemState {
   id: string
   slotValues: Record<string, SlotValueEntry>
