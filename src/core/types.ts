@@ -45,6 +45,14 @@ export type ToolDef = LeafToolDef<any, any> | CompositeToolDef<any, any>
 export interface War3EventDef extends BaseItemDef {
   template: string
   slots?: Record<string, SlotDef>
+  /**
+   * Slot key whose resolved value becomes `event.source` in the serialized
+   * Trigger JSON. The runtime matches events by `event.source` (see
+   * `@triggerix/runtime` createRuntime.emit), so this field is the
+   * preset-level bridge from "user picked component X in slot Y" to
+   * "this trigger fires only for component X". Required.
+   */
+  sourceSlot: string
 }
 
 export interface War3ActionDef extends BaseItemDef {

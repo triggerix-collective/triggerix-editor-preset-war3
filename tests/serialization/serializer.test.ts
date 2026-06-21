@@ -217,6 +217,86 @@ describe('toTrigger', () => {
     expect(firstAction.params).toBeUndefined()
   })
 
+  it('hoists the sourceSlot value into event.source and keeps the rest in payload', () => {
+    const r = buildRegistry()
+    r.registerEvent({
+      id: 'btn.click',
+      label: '按钮点击',
+      template: '${button}被点击',
+      sourceSlot: 'button',
+      slots: { button: { label: '按钮', tools: ['text'] } }
+    })
+    const state: War3EditorState = {
+      events: [
+        {
+          id: 'btn.click',
+          slotValues: { button: { tool: 'text', value: 'confirm_btn' } }
+        }
+      ],
+      conditions: [],
+      actions: []
+    }
+    const t = toTrigger(state, r, 'trig')
+    expect(t.events).toEqual([
+      { type: 'btn.click', source: 'confirm_btn' }
+    ])
+  })
+
+  it('keeps non-sourceSlot slots in payload when sourceSlot is set', () => {
+    const r = buildRegistry()
+    r.registerEvent({
+      id: 'btn.click',
+      label: '按钮点击',
+      template: '${button}被点击',
+      sourceSlot: 'button',
+      slots: {
+        button: { label: '按钮', tools: ['text'] },
+        meta: { label: '元信息', tools: ['text'] }
+      }
+    })
+    const state: War3EditorState = {
+      events: [
+        {
+          id: 'btn.click',
+          slotValues: {
+            button: { tool: 'text', value: 'confirm_btn' },
+            meta: { tool: 'text', value: 'hello' }
+          }
+        }
+      ],
+      conditions: [],
+      actions: []
+    }
+    const t = toTrigger(state, r, 'trig')
+    expect(t.events).toEqual([
+      { type: 'btn.click', source: 'confirm_btn', payload: { meta: 'hello' } }
+    ])
+  })
+
+  it('emits multiple events each with its own resolved sourceSlot', () => {
+    const r = buildRegistry()
+    r.registerEvent({
+      id: 'btn.click',
+      label: '按钮点击',
+      template: '${button}被点击',
+      sourceSlot: 'button',
+      slots: { button: { label: '按钮', tools: ['text'] } }
+    })
+    const state: War3EditorState = {
+      events: [
+        { id: 'btn.click', slotValues: { button: { tool: 'text', value: 'a' } } },
+        { id: 'btn.click', slotValues: { button: { tool: 'text', value: 'b' } } }
+      ],
+      conditions: [],
+      actions: []
+    }
+    const t = toTrigger(state, r, 'trig')
+    expect(t.events).toEqual([
+      { type: 'btn.click', source: 'a' },
+      { type: 'btn.click', source: 'b' }
+    ])
+  })
+
   it('serializes the complete trigger shape end-to-end', () => {
     const r = buildRegistry()
     const state: War3EditorState = {

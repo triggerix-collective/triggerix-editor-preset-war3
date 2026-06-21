@@ -6,6 +6,9 @@ minimumReleaseAgeExclude:
   - '@triggerix/core'
   - '@triggerix/editor'
   - '@triggerix/registry'
+
 shellEmulator: true
 
 trustPolicy: no-downgrade
+trustPolicyExclude:
+  - nanoid

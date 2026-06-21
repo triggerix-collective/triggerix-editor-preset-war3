@@ -49,13 +49,36 @@ function resolveItemParams(
 }
 
 /**
- * Serialize an ItemState into an Event (with optional payload).
+ * Serialize an ItemState into an Event.
+ *
+ * If the event def declares a `sourceSlot`, the resolved value of that slot
+ * is hoisted to `event.source` so the runtime can filter triggers by source.
+ * All remaining resolved slots go into `event.payload` as before.
  */
 function serializeEvent(item: ItemState, registry: War3Registry): Event {
-  const eventParams = resolveItemParams(item.slotValues, registry)
+  const def = registry.getEvent(item.id)
+  const sourceKey = def?.sourceSlot
+  const payload: Record<string, Value> = {}
+  let hasPayload = false
+  let source: string | undefined
+
+  for (const [key, entry] of Object.entries(item.slotValues)) {
+    const resolved = resolveSlotValue(entry, registry)
+    if (resolved === undefined)
+      continue
+    if (sourceKey !== undefined && key === sourceKey) {
+      source = resolved as string
+    }
+    else {
+      payload[key] = resolved
+      hasPayload = true
+    }
+  }
+
   return {
     type: item.id,
-    ...(eventParams ? { payload: eventParams } : {})
+    ...(source !== undefined ? { source } : {}),
+    ...(hasPayload ? { payload } : {})
   }
 }
 
